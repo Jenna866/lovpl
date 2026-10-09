@@ -11,7 +11,9 @@ var S = {
       i = action.indexOf('?a=');
 
     S.Drawing.init('.canvas');
-    document.body.classList.add('body--ready');
+    if (document.body) {
+      document.body.classList.add('body--ready');
+    }
 
     if (i !== -1) {
       S.UI.simulate(decodeURI(action).substring(i + 3));
@@ -23,7 +25,7 @@ var S = {
       S.Shape.render();
     });
 
-    // Temporizador de 22 segundos para mostrar el texto, el corazón y pasar al video
+    // Temporizador de 22 segundos para mostrar el texto, el corazón y pasar al video (con validación segura)
     setTimeout(function() {
       var canvasMatrix = document.getElementById('canvas-matrix');
       var pinkboard = document.getElementById('pinkboard');
@@ -78,6 +80,7 @@ S.Drawing = (function () {
   return {
     init: function (el) {
       canvas = document.querySelector(el);
+      if (!canvas) return;
       context = canvas.getContext('2d');
       this.adjustCanvas();
 
@@ -94,19 +97,22 @@ S.Drawing = (function () {
     },
 
     adjustCanvas: function () {
+      if (!canvas) return;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     },
 
     clearFrame: function () {
+      if (!context || !canvas) return;
       context.clearRect(0, 0, canvas.width, canvas.height);
     },
 
     getArea: function () {
-      return { w: canvas.width, h: canvas.height };
+      return canvas ? { w: canvas.width, h: canvas.height } : { w: window.innerWidth, h: window.innerHeight };
     },
 
     drawCircle: function (p, c) {
+      if (!context) return;
       context.fillStyle = c.render();
       context.beginPath();
       context.arc(p.x, p.y, p.z, 0, 2 * Math.PI, true);
@@ -560,6 +566,9 @@ S.ShapeBuilder = (function () {
         return ParticlePool;
       })();
 
+      var targetCanvas = document.getElementById('pinkboard');
+      if (!targetCanvas) return;
+
       (function (canvas) {
         if (!canvas) return;
         var context = canvas.getContext('2d'),
@@ -628,7 +637,7 @@ S.ShapeBuilder = (function () {
           onResize();
           render();
         }, 10);
-      })(document.getElementById('pinkboard'));
+      })(targetCanvas);
     }
   };
 }());
@@ -649,6 +658,7 @@ S.Shape = (function () {
 
   return {
     switchShape: function (n, fast) {
+      if (!n || !n.dots) return;
       var size, a = S.Drawing.getArea();
       width = n.w;
       height = n.h;
