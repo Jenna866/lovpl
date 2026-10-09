@@ -1,0 +1,211 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Word Love Code</title>
+    <meta name="language" content="zh-CN">
+    <meta name="github" content="https://github.com/sun0225SUN/Awesome-Love-Code">
+    <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/sun0225SUN/photos/img/20210715233345.png">
+
+    <style>
+        html,
+        body {
+            margin: 0px;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+
+        canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .namebox {
+            color: #ff5ba5;
+            position: absolute;
+            z-index: 9999;
+            top: 50%;
+            left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            transition: 1s;
+        }
+
+        .namebox h1 {
+            margin: 0 auto;
+        }
+
+        /* Estilos para el contenedor del video y reproductor */
+        #video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: none; /* Oculto hasta que termine la animación del corazón */
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        #video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Capa del reproductor de música abajo */
+        #music-player-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px 0;
+            backdrop-filter: blur(5px);
+        }
+
+        .player-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .equalizer-img {
+            width: 100%;
+            max-height: 80px;
+            object-fit: contain;
+            opacity: 0.9;
+        }
+
+        .player-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .play-pause-btn {
+            font-size: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<script>
+        // Este temporizador se ejecutará después de toda la secuencia (22 segundos para el texto, el corazón y sus 4 segundos de espera)
+        setTimeout(function() {
+            var canvasMatrix = document.getElementById('canvas-matrix');
+            var pinkboard = document.getElementById('pinkboard');
+            var mainCanvas = document.querySelector('.canvas');
+            var videoContainer = document.getElementById('video-container');
+            var finalVideo = document.getElementById('final-video');
+            var bgAudio = document.getElementById('bg-audio');
+
+            if (canvasMatrix) canvasMatrix.style.display = 'none';
+            if (pinkboard) pinkboard.style.display = 'none';
+            if (mainCanvas) mainCanvas.style.display = 'none';
+
+            if (videoContainer && finalVideo) {
+                videoContainer.style.display = 'flex';
+                finalVideo.play().catch(function(e) { console.log(e); });
+            }
+
+            // Control de Play/Pause del reproductor inferior
+            var playPauseBtn = document.getElementById('play-pause-btn');
+            if (playPauseBtn && bgAudio) {
+                playPauseBtn.addEventListener('click', function() {
+                    if (bgAudio.paused) {
+                        bgAudio.play();
+                        playPauseBtn.textContent = '⏸';
+                    } else {
+                        bgAudio.pause();
+                        playPauseBtn.textContent = '▶';
+                    }
+                });
+            }
+        }, 22000); // 22000 ms = 22 segundos totales
+    </script>
+<body>
+    <!-- Canción de fondo -->
+    <audio id="bg-audio" src="audio/POLLYPOCKET.mp3" preload="auto" loop></audio>
+
+    <canvas id="canvas-matrix" style="position:absolute;width:100%;height:100%;z-index:8888"></canvas>
+    <canvas style="position:absolute;width:100%;height:100%;z-index:9999" class="canvas"></canvas>
+    
+    <div class="overlay">
+        <div class="tabs">
+            <div class="tabs-labels"><span class="tabs-label">Commands</span><span class="tabs-label">Info</span><span class="tabs-label">Share</span></div>
+            <div class="tabs-panels">
+                <ul class="tabs-panel commands">
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <canvas id="pinkboard" style="position:absolute;width:100%;height:100%;z-index:8888"></canvas>
+
+    <div class="namebox" style="opacity: 0;">
+        <h1 style="font-family: 'Comic Sans MS', cursive, sans-serif;"></h1>
+    </div>
+
+    <!-- Contenedor del video y reproductor flotante -->
+    <div id="video-container">
+        <!-- Tu video principal -->
+        <video id="final-video" src="videos/nombre.mp4" playsinline autoplay muted loop></video>
+        
+        <!-- Reproductor de música flotante en la parte inferior -->
+        <div id="music-player-overlay">
+            <div class="player-content">
+                <!-- Imagen del ecualizador -->
+                <img src="videoframe_14012.png" alt="Ecualizador" class="equalizer-img">
+                
+                <!-- Controles interactivos -->
+                <div class="player-controls">
+                    <button class="control-btn" id="shuffle-btn">🔀</button>
+                    <button class="control-btn" id="prev-btn">⏮</button>
+                    <button class="control-btn play-pause-btn" id="play-pause-btn">⏸</button>
+                    <button class="control-btn" id="next-btn">⏭</button>
+                    <button class="control-btn" id="repeat-btn">🔁</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/index.js"></script>
+    <script src="js/heart.js"></script>
+    <script src="js/matrix.js"></script>
+</body>
+
+</html>
