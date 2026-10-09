@@ -1,16 +1,9 @@
 /*
-
   Shape Shifter
   =============
   A canvas experiment by Kenneth Cachia
   http://www.kennethcachia.com
-
-  Updated code
-  ------------
-  https://github.com/kennethcachia/Shape-Shifter
-
 */
-
 
 var S = {
   init: function () {
@@ -30,7 +23,7 @@ var S = {
       S.Shape.render();
     });
 
-    // Temporizador único de 22 segundos para mostrar el texto, el corazón y pasar al video
+    // Temporizador de 22 segundos para mostrar el texto, el corazón y pasar al video
     setTimeout(function() {
       var canvasMatrix = document.getElementById('canvas-matrix');
       var pinkboard = document.getElementById('pinkboard');
@@ -48,12 +41,10 @@ var S = {
         finalVideo.play().catch(function(e) { console.log(e); });
       }
 
-      // Reproducir audio de fondo si está disponible
       if (bgAudio) {
         bgAudio.play().catch(function(e) { console.log(e); });
       }
 
-      // Control de Play/Pause del reproductor inferior
       var playPauseBtn = document.getElementById('play-pause-btn');
       if (playPauseBtn && bgAudio) {
         playPauseBtn.addEventListener('click', function() {
@@ -66,7 +57,7 @@ var S = {
           }
         });
       }
-    }, 22000); // 22 segundos en total
+    }, 22000);
   }
 };
 
@@ -74,8 +65,8 @@ var S = {
 S.Drawing = (function () {
   var canvas,
     context,
-    renderFn
-  requestFrame = window.requestAnimationFrame ||
+    renderFn;
+  var requestFrame = window.requestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
     window.mozRequestAnimationFrame ||
     window.oRequestAnimationFrame ||
@@ -131,17 +122,14 @@ S.UI = (function () {
     interval,
     isTouch = false,
     currentAction,
-    resizeTimer,
-    time,
     maxShapeSize = 30,
-    firstAction = true,
     sequence = [],
     cmd = '#';
 
   function formatTime(date) {
     var h = date.getHours(),
-      m = date.getMinutes(),
-      m = m < 10 ? '0' + m : m;
+      m = date.getMinutes();
+    m = m < 10 ? '0' + m : m;
     return h + ':' + m;
   }
 
@@ -174,26 +162,23 @@ S.UI = (function () {
   function reset(destroy) {
     clearInterval(interval);
     sequence = [];
-    time = null;
     destroy && S.Shape.switchShape(S.ShapeBuilder.letter(''));
   }
 
   function performAction(value) {
-    var action,
-      value,
-      current;
+    var action, val, current;
 
     sequence = typeof (value) === 'object' ? value : sequence.concat(value.split('|'));
 
     timedAction(function (index) {
       current = sequence.shift();
       action = getAction(current);
-      value = getValue(current);
+      val = getValue(current);
 
       switch (action) {
         case 'countdown':
-          value = parseInt(value) || 10;
-          value = value > 0 ? value : 10;
+          val = parseInt(val) || 10;
+          val = val > 0 ? val : 10;
 
           timedAction(function (index) {
             if (index === 0) {
@@ -205,35 +190,29 @@ S.UI = (function () {
             } else {
               S.Shape.switchShape(S.ShapeBuilder.letter(index), true);
             }
-          }, 1000, value, true);
+          }, 1000, val, true);
           break;
 
         case 'rectangle':
-          value = value && value.split('x');
-          value = (value && value.length === 2) ? value : [maxShapeSize, maxShapeSize / 2];
-
-          S.Shape.switchShape(S.ShapeBuilder.rectangle(Math.min(maxShapeSize, parseInt(value[0])), Math.min(maxShapeSize, parseInt(value[1]))));
-
+          val = val && val.split('x');
+          val = (val && val.length === 2) ? val : [maxShapeSize, maxShapeSize / 2];
+          S.Shape.switchShape(S.ShapeBuilder.rectangle(Math.min(maxShapeSize, parseInt(val[0])), Math.min(maxShapeSize, parseInt(val[1]))));
           break;
 
         case 'circle':
-          value = parseInt(value) || maxShapeSize;
-          value = Math.min(value, maxShapeSize);
-          S.Shape.switchShape(S.ShapeBuilder.circle(value));
+          val = parseInt(val) || maxShapeSize;
+          val = Math.min(val, maxShapeSize);
+          S.Shape.switchShape(S.ShapeBuilder.circle(val));
           break;
 
         case 'time':
           var t = formatTime(new Date());
-
           if (sequence.length > 0) {
             S.Shape.switchShape(S.ShapeBuilder.letter(t));
           } else {
             timedAction(function () {
               t = formatTime(new Date());
-              if (t !== time) {
-                time = t;
-                S.Shape.switchShape(S.ShapeBuilder.letter(time));
-              }
+              S.Shape.switchShape(S.ShapeBuilder.letter(t));
             }, 1000);
           }
           break;
@@ -243,12 +222,6 @@ S.UI = (function () {
       }
     }, 2000, sequence.length);
   }
-
-  function init() {
-    isTouch && document.body.classList.add('touch');
-  }
-
-  init();
 
   return {
     simulate: function (action) {
@@ -276,38 +249,23 @@ S.Color = function (r, g, b, a) {
 
 S.Color.prototype = {
   render: function () {
-    return 'rgba(' + this.r + ',' + + this.g + ',' + this.b + ',' + this.a + ')';
+    return 'rgba(' + this.r + ',' + this.g + ',' + this.b + ',' + this.a + ')';
   }
 };
 
 
 S.Dot = function (x, y) {
-  this.p = new S.Point({
-    x: x,
-    y: y,
-    z: 5,
-    a: 1,
-    h: 0
-  });
-
+  this.p = new S.Point({ x: x, y: y, z: 5, a: 1, h: 0 });
   this.e = 0.07;
   this.s = true;
-
   this.c = new S.Color(255, 255, 255, this.p.a);
-
   this.t = this.clone();
   this.q = [];
 };
 
 S.Dot.prototype = {
   clone: function () {
-    return new S.Point({
-      x: this.x,
-      y: this.y,
-      z: this.z,
-      a: this.a,
-      h: this.h
-    });
+    return new S.Point({ x: this.x, y: this.y, z: this.z, a: this.a, h: this.h });
   },
 
   _draw: function () {
@@ -345,7 +303,6 @@ S.Dot.prototype = {
   _update: function () {
     if (this._moveTowards(this.t)) {
       var p = this.q.shift();
-
       if (p) {
         this.t.x = p.x || this.p.x;
         this.t.y = p.y || this.p.y;
@@ -365,7 +322,7 @@ S.Dot.prototype = {
       }
     }
 
-    d = this.p.a - this.t.a;
+    var d = this.p.a - this.t.a;
     this.p.a = Math.max(0.1, this.p.a - (d * 0.05));
     d = this.p.z - this.t.z;
     this.p.z = Math.max(1, this.p.z - (d * 0.05));
@@ -389,7 +346,7 @@ S.Dot.prototype = {
     this._update();
     this._draw();
   }
-}
+};
 
 
 S.ShapeBuilder = (function () {
@@ -408,9 +365,8 @@ S.ShapeBuilder = (function () {
   }
 
   function processCanvas() {
-    var pixels = shapeContext.getImageData(0, 0, shapeCanvas.width, shapeCanvas.height).data;
-    dots = [],
-      pixels,
+    var pixels = shapeContext.getImageData(0, 0, shapeCanvas.width, shapeCanvas.height).data,
+      dots = [],
       x = 0,
       y = 0,
       fx = shapeCanvas.width,
@@ -420,11 +376,7 @@ S.ShapeBuilder = (function () {
 
     for (var p = 0; p < pixels.length; p += (4 * gap)) {
       if (pixels[p + 3] > 0) {
-        dots.push(new S.Point({
-          x: x,
-          y: y
-        }));
-
+        dots.push(new S.Point({ x: x, y: y }));
         w = x > w ? x : w;
         h = y > h ? y : h;
         fx = x < fx ? x : fx;
@@ -466,13 +418,11 @@ S.ShapeBuilder = (function () {
       shapeContext.arc(r * gap, r * gap, r * gap, 0, 2 * Math.PI, false);
       shapeContext.fill();
       shapeContext.closePath();
-
       return processCanvas();
     },
 
     letter: function (l) {
       var s = 0;
-
       setFontSize(fontSize);
       s = Math.min(fontSize,
         (shapeCanvas.width / shapeContext.measureText(l).width) * 0.8 * fontSize,
@@ -481,7 +431,6 @@ S.ShapeBuilder = (function () {
 
       shapeContext.clearRect(0, 0, shapeCanvas.width, shapeCanvas.height);
       shapeContext.fillText(l, shapeCanvas.width / 2, shapeCanvas.height / 2);
-
       return processCanvas();
     },
 
@@ -495,39 +444,41 @@ S.ShapeBuilder = (function () {
           size: 30,
         },
       };
-      (
-        function () {
-          var b = 0;
-          var c = ["ms", "moz", "webkit", "o"];
-          for (var a = 0; a < c.length && !window.requestAnimationFrame; ++a) {
-            window.requestAnimationFrame = window[c[a] + "RequestAnimationFrame"];
-            window.cancelAnimationFrame = window[c[a] + "CancelAnimationFrame"] || window[c[a] + "CancelRequestAnimationFrame"]
-          }
-          if (!window.requestAnimationFrame) {
-            window.requestAnimationFrame = function (h, e) {
-              var d = new Date().getTime();
-              var f = Math.max(0, 16 - (d - b));
-              var g = window.setTimeout(function () { h(d + f) }, f); b = d + f; return g
-            }
-          } if (!window.cancelAnimationFrame) { window.cancelAnimationFrame = function (d) { clearTimeout(d) } }
-        }());
+
+      (function () {
+        var b = 0;
+        var c = ["ms", "moz", "webkit", "o"];
+        for (var a = 0; a < c.length && !window.requestAnimationFrame; ++a) {
+          window.requestAnimationFrame = window[c[a] + "RequestAnimationFrame"];
+          window.cancelAnimationFrame = window[c[a] + "CancelAnimationFrame"] || window[c[a] + "CancelRequestAnimationFrame"];
+        }
+        if (!window.requestAnimationFrame) {
+          window.requestAnimationFrame = function (h, e) {
+            var d = new Date().getTime();
+            var f = Math.max(0, 16 - (d - b));
+            var g = window.setTimeout(function () { h(d + f) }, f);
+            b = d + f;
+            return g;
+          };
+        }
+        if (!window.cancelAnimationFrame) {
+          window.cancelAnimationFrame = function (d) { clearTimeout(d); };
+        }
+      }());
+
       var Point = (function () {
         function Point(x, y) {
           this.x = (typeof x !== 'undefined') ? x : 0;
           this.y = (typeof y !== 'undefined') ? y : 0;
         }
-        Point.prototype.clone = function () {
-          return new Point(this.x, this.y);
-        };
+        Point.prototype.clone = function () { return new Point(this.x, this.y); };
         Point.prototype.length = function (length) {
-          if (typeof length == 'undefined')
-            return Math.sqrt(this.x * this.x + this.y * this.y);
+          if (typeof length == 'undefined') return Math.sqrt(this.x * this.x + this.y * this.y);
           this.normalize();
           this.x *= length;
           this.y *= length;
           return this;
         };
-
         Point.prototype.normalize = function () {
           var length = this.length();
           this.x /= length;
@@ -560,11 +511,8 @@ S.ShapeBuilder = (function () {
           this.velocity.y += this.acceleration.y * deltaTime;
           this.age += deltaTime;
         };
-
         Particle.prototype.draw = function (context, image) {
-          function ease(t) {
-            return (--t) * t * t + 1;
-          }
+          function ease(t) { return (--t) * t * t + 1; }
           var size = image.width * ease(this.age / settings.particles.duration);
           context.globalAlpha = 1 - this.age / settings.particles.duration;
           context.drawImage(image, this.position.x - size / 2, this.position.y - size / 2, size, size);
@@ -573,14 +521,10 @@ S.ShapeBuilder = (function () {
       })();
 
       var ParticlePool = (function () {
-        var particles,
-          firstActive = 0,
-          firstFree = 0,
-          duration = settings.particles.duration;
+        var particles, firstActive = 0, firstFree = 0, duration = settings.particles.duration;
         function ParticlePool(length) {
           particles = new Array(length);
-          for (var i = 0; i < particles.length; i++)
-            particles[i] = new Particle();
+          for (var i = 0; i < particles.length; i++) particles[i] = new Particle();
         }
         ParticlePool.prototype.add = function (x, y, dx, dy) {
           particles[firstFree].initialize(x, y, dx, dy);
@@ -592,14 +536,11 @@ S.ShapeBuilder = (function () {
         ParticlePool.prototype.update = function (deltaTime) {
           var i;
           if (firstActive < firstFree) {
-            for (i = firstActive; i < firstFree; i++)
-              particles[i].update(deltaTime);
+            for (i = firstActive; i < firstFree; i++) particles[i].update(deltaTime);
           }
           if (firstFree < firstActive) {
-            for (i = firstActive; i < particles.length; i++)
-              particles[i].update(deltaTime);
-            for (i = 0; i < firstFree; i++)
-              particles[i].update(deltaTime);
+            for (i = firstActive; i < particles.length; i++) particles[i].update(deltaTime);
+            for (i = 0; i < firstFree; i++) particles[i].update(deltaTime);
           }
           while (particles[firstActive].age >= duration && firstActive != firstFree) {
             firstActive++;
@@ -607,21 +548,20 @@ S.ShapeBuilder = (function () {
           }
         };
         ParticlePool.prototype.draw = function (context, image) {
+          var i;
           if (firstActive < firstFree) {
-            for (i = firstActive; i < firstFree; i++)
-              particles[i].draw(context, image);
+            for (i = firstActive; i < firstFree; i++) particles[i].draw(context, image);
           }
           if (firstFree < firstActive) {
-            for (i = firstActive; i < particles.length; i++)
-              particles[i].draw(context, image);
-            for (i = 0; i < firstFree; i++)
-              particles[i].draw(context, image);
+            for (i = firstActive; i < particles.length; i++) particles[i].draw(context, image);
+            for (i = 0; i < firstFree; i++) particles[i].draw(context, image);
           }
         };
         return ParticlePool;
       })();
 
       (function (canvas) {
+        if (!canvas) return;
         var context = canvas.getContext('2d'),
           particles = new ParticlePool(settings.particles.length),
           particleRate = settings.particles.length / settings.particles.duration,
@@ -635,31 +575,31 @@ S.ShapeBuilder = (function () {
         }
 
         var image = (function () {
-          var canvas = document.createElement('canvas'),
-            context = canvas.getContext('2d');
-          canvas.width = settings.particles.size;
-          canvas.height = settings.particles.size;
+          var cCanvas = document.createElement('canvas'),
+            cContext = cCanvas.getContext('2d');
+          cCanvas.width = settings.particles.size;
+          cCanvas.height = settings.particles.size;
           function to(t) {
             var point = pointOnHeart(t);
             point.x = settings.particles.size / 2 + point.x * settings.particles.size / 350;
             point.y = settings.particles.size / 2 - point.y * settings.particles.size / 350;
             return point;
           }
-          context.beginPath();
+          cContext.beginPath();
           var t = -Math.PI;
           var point = to(t);
-          context.moveTo(point.x, point.y);
+          cContext.moveTo(point.x, point.y);
           while (t < Math.PI) {
             t += 0.01;
             point = to(t);
-            context.lineTo(point.x, point.y);
+            cContext.lineTo(point.x, point.y);
           }
-          context.closePath();
-          context.fillStyle = '#ff30c5';
-          context.fill();
-          var image = new Image();
-          image.src = canvas.toDataURL();
-          return image;
+          cContext.closePath();
+          cContext.fillStyle = '#ff30c5';
+          cContext.fill();
+          var img = new Image();
+          img.src = cCanvas.toDataURL();
+          return img;
         })();
 
         function render() {
@@ -703,19 +643,15 @@ S.Shape = (function () {
 
   function compensate() {
     var a = S.Drawing.getArea();
-
     cx = a.w / 2 - width / 2;
     cy = a.h / 2 - height / 2;
   }
 
   return {
     switchShape: function (n, fast) {
-      var size,
-        a = S.Drawing.getArea();
-
+      var size, a = S.Drawing.getArea();
       width = n.w;
       height = n.h;
-
       compensate();
 
       if (n.dots.length > dots.length) {
@@ -725,24 +661,15 @@ S.Shape = (function () {
         }
       }
 
-      var d = 0,
-        i = 0;
-
+      var d = 0, i = 0;
       while (n.dots.length > 0) {
         i = Math.floor(Math.random() * n.dots.length);
         dots[d].e = fast ? 0.25 : (dots[d].s ? 0.14 : 0.11);
 
         if (dots[d].s) {
-          dots[d].move(new S.Point({
-            z: Math.random() * 20 + 10,
-            a: Math.random(),
-            h: 18
-          }));
+          dots[d].move(new S.Point({ z: Math.random() * 20 + 10, a: Math.random(), h: 18 }));
         } else {
-          dots[d].move(new S.Point({
-            z: Math.random() * 5 + 5,
-            h: fast ? 18 : 30
-          }));
+          dots[d].move(new S.Point({ z: Math.random() * 5 + 5, h: fast ? 18 : 30 }));
         }
 
         dots[d].s = true;
@@ -758,17 +685,12 @@ S.Shape = (function () {
         d++;
       }
 
-      for (var i = d; i < dots.length; i++) {
-        if (dots[i].s) {
-          dots[i].move(new S.Point({
-            z: Math.random() * 20 + 10,
-            a: Math.random(),
-            h: 20
-          }));
-
-          dots[i].s = false;
-          dots[i].e = 0.04;
-          dots[i].move(new S.Point({
+      for (var j = d; j < dots.length; j++) {
+        if (dots[j].s) {
+          dots[j].move(new S.Point({ z: Math.random() * 20 + 10, a: Math.random(), h: 20 }));
+          dots[j].s = false;
+          dots[j].e = 0.04;
+          dots[j].move(new S.Point({
             x: Math.random() * a.w,
             y: Math.random() * a.h,
             a: 0.3,
@@ -786,6 +708,5 @@ S.Shape = (function () {
     }
   }
 }());
-
 
 S.init();
