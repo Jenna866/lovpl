@@ -224,7 +224,9 @@ S.UI = (function () {
           break;
 
         default:
-          S.Shape.switchShape(S.ShapeBuilder.letter(current[0] === cmd ? 'What?' : current));
+          if (current) {
+            S.Shape.switchShape(S.ShapeBuilder.letter(current[0] === cmd ? 'What?' : current));
+          }
       }
     }, 2000, sequence.length);
   }
@@ -428,6 +430,7 @@ S.ShapeBuilder = (function () {
     },
 
     letter: function (l) {
+      if (!l) l = '';
       var s = 0;
       setFontSize(fontSize);
       s = Math.min(fontSize,
