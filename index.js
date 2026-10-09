@@ -25,8 +25,25 @@ var S = {
       S.Shape.render();
     });
 
+    // Desbloquear el audio en celulares: el navegador solo lo permite tras un toque del usuario
+    var audioUnlocked = false;
+    function unlockAudio() {
+      if (audioUnlocked) return;
+      var a = document.getElementById('bg-audio');
+      if (!a) return;
+      audioUnlocked = true;
+      a.muted = false;
+      var p = a.play();
+      if (p && p.then) {
+        p.then(function () { if (!window.__videoShown) a.pause(); }).catch(function () { audioUnlocked = false; });
+      }
+    }
+    document.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
+    document.addEventListener('click', unlockAudio, { once: true });
+
     // Temporizador de 22 segundos para mostrar el texto, el corazón y pasar al video (con validación segura)
     setTimeout(function() {
+      window.__videoShown = true;
       var canvasMatrix = document.getElementById('canvas-matrix');
       var pinkboard = document.getElementById('pinkboard');
       var mainCanvas = document.querySelector('.canvas');
@@ -44,7 +61,13 @@ var S = {
       }
 
       if (bgAudio) {
-        bgAudio.play().catch(function(e) { console.log(e); });
+        bgAudio.play().catch(function(e) {
+          console.log(e);
+          // Si el celular lo bloqueó, se reproduce en el siguiente toque
+          var retry = function () { bgAudio.play().catch(function () {}); };
+          document.addEventListener('touchstart', retry, { once: true, passive: true });
+          document.addEventListener('click', retry, { once: true });
+        });
       }
 
       var playPauseBtn = document.getElementById('play-pause-btn');
