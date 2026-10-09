@@ -133,12 +133,12 @@
 
     <!-- Contenedor del video y reproductor flotante -->
     <div id="video-container">
-        <video id="final-video" src="nombre.mp4" playsinline autoplay muted loop></video>
+        <video id="final-video" src="./nombre.mp4" playsinline autoplay muted loop></video>
         
         <!-- Barra de reproducción inferior -->
         <div class="music-player-bar">
             <div class="player-info">
-                <img src="videoframe_14012.png" alt="Ecualizador" class="equalizer-img">
+                <img src="./videoframe_14012.png" alt="Ecualizador" class="equalizer-img">
                 <span class="song-title">Reproduciendo...</span>
             </div>
             <div class="player-controls">
@@ -148,12 +148,12 @@
     </div>
 
     <!-- Audio de fondo -->
-    <audio id="bg-audio" src="POLLYPOCKET.mp3" preload="auto" loop></audio>
+    <audio id="bg-audio" src="./POLLYPOCKET.mp3" preload="auto" loop></audio>
 
-    <!-- Scripts de la animación -->
-    <script src="matrix.js"></script>
-    <script src="index.js"></script>
-    <script src="heart.js"></script>
+    <!-- Scripts de la animación con rutas relativas correctas -->
+    <script src="./matrix.js"></script>
+    <script src="./index.js"></script>
+    <script src="./heart.js"></script>
 
     <!-- Temporizador automático para pasar de la animación al video (22 segundos totales) -->
     <script>
