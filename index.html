@@ -155,39 +155,5 @@
     <script src="./index.js"></script>
     <script src="./heart.js"></script>
 
-    <!-- Temporizador automático para pasar de la animación al video (22 segundos totales) -->
-    <script>
-        setTimeout(function() {
-            var canvasMatrix = document.getElementById('canvas-matrix');
-            var pinkboard = document.getElementById('pinkboard');
-            var mainCanvas = document.querySelector('.canvas');
-            var videoContainer = document.getElementById('video-container');
-            var finalVideo = document.getElementById('final-video');
-            var bgAudio = document.getElementById('bg-audio');
-
-            if (canvasMatrix) canvasMatrix.style.display = 'none';
-            if (pinkboard) pinkboard.style.display = 'none';
-            if (mainCanvas) mainCanvas.style.display = 'none';
-
-            if (videoContainer && finalVideo) {
-                videoContainer.style.display = 'flex';
-                finalVideo.play().catch(function(e) { console.log(e); });
-            }
-
-            // Control de Play/Pause del reproductor inferior
-            var playPauseBtn = document.getElementById('play-pause-btn');
-            if (playPauseBtn && bgAudio) {
-                playPauseBtn.addEventListener('click', function() {
-                    if (bgAudio.paused) {
-                        bgAudio.play();
-                        playPauseBtn.textContent = '⏸';
-                    } else {
-                        bgAudio.pause();
-                        playPauseBtn.textContent = '▶';
-                    }
-                });
-            }
-        }, 22000); // 22 segundos para la secuencia completa y los 4s del corazón
-    </script>
 </body>
 </html>
